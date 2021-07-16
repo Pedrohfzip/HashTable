@@ -44,16 +44,18 @@ Hash* criaHash();
 void inicializarTabelaChaves(Hash*,int);
 void insereElementoChave(Hash*,ElementoChave*,int);
 ElementoChave* criaElementoChave(int);
+
 FILE* abreArquivo(char*,char*);
 void lerArquivo(Hash*);
 int funcaoHash(char*);
 void inserirNomeHash(Hash*,char*);
 void quicksort(Elemento*, Elemento*);
-void swap(Elemento*,Elemento*);
+void trocarPosicao(Elemento*,Elemento*);
+Elemento* achaPivo(Elemento*,Elemento*);
 void mostrarListaChaves(Hash*);
 ElementoChave* encontrarChave(Hash*,int);
 void encontrarNome(Hash*,char*);
-int buscarNome(ElementoChave*, char*);
+//int buscarNome(ElementoChave*, char*);
 void escreveArquivo(Hash*);
 void mostrarListas(Hash*);
 void mostrarNomes(Hash*);
@@ -286,35 +288,63 @@ ElementoChave* aux = lista->head;
 }
 
 // Orndenaçao Quicksort
-void quicksort(Elemento* start, Elemento* end){
-  if (end != NULL && start != end && start != end->next){
-    Elemento* i = start->previous;
-    Elemento* pivo = end;
-
+void quicksort(Elemento* comeco, Elemento* fim){
+  if (fim != NULL && comeco != fim && comeco != fim->next){
+    Elemento* i = comeco->previous;
+    Elemento* pivo = achaPivo(comeco,fim);
     // Percorre a lista do início ao fim
-    for (Elemento *j = start; j != end; j = j->next){
+    for (Elemento* x = comeco; x != fim->next; x = x->next){
       // Se o valor for menor que o pivô, trocar com o i
-      if (strcmp(j->nome, pivo->nome) < 0){
-        i = (i == NULL ? start : i->next);
-        swap(i, j);
-      }
+        if (strcmp(x->nome, pivo->nome) < 0){
+            if(i == NULL){
+                i = comeco;
+            }else{
+                i = i->next;
+            }
+            trocarPosicao(i, x);
+        }
     }
+
     // Coloca o pivô no lugar certo
-    i = (i == NULL ? start : i->next);
-    swap(i, pivo);
+    if(i == NULL){
+        i = comeco;
+    }else{
+        i = i->next;
+    }
+    trocarPosicao(i, pivo);
 
     // Ordena as duas partes da lista
-    quicksort(start, i->previous);
-    quicksort(i->next, end);
+    quicksort(comeco, i->previous);
+    quicksort(i->next, fim);
   }
 }
 
-void swap(Elemento* a, Elemento* b){
-  char* aux = (char*) malloc(sizeof(char) * 15);
-  strcpy(aux, a->nome);
-  strcpy(a->nome, b->nome);
-  strcpy(b->nome, aux);
-  free(aux);
+void trocarPosicao(Elemento* nome1, Elemento* nome2){
+  char* nomeAux = (char*) malloc(sizeof(char) * 15);
+  strcpy(nomeAux, nome1->nome);
+  strcpy(nome1->nome, nome2->nome);
+  strcpy(nome2->nome, nomeAux);
+  free(nomeAux);
+}
+Elemento* achaPivo(Elemento* comeco, Elemento* fim){
+int size = 0;
+  for(Elemento *item = comeco; item != fim; item = item->next){
+    size++;
+  }
+  int pivo = size/2;
+  if(pivo >= 0 && pivo < size){
+    Elemento* aux = comeco;
+    int i;
+    for(i=0; i < pivo; i++){
+      aux = aux->next;
+    }
+    return aux;
+  }else if(pivo<0){
+    return NULL;
+
+  }else if(pivo >= size){
+    return NULL;
+  }
 }
 
 //Monstra a todos os nomes
@@ -368,7 +398,7 @@ int posicao = 0;
 
 }
 
-int buscarNome(ElementoChave* lista, char* nome){
+/*int buscarNome(ElementoChave* lista, char* nome){
     int posicao = 0;
     for(Elemento* nomeLista = lista->head; nomeLista != NULL; nomeLista = nomeLista->next){
         if(strcmp(nomeLista->nome,nome)){
@@ -378,7 +408,7 @@ int buscarNome(ElementoChave* lista, char* nome){
         posicao++;
     }
     return posicao;
-}
+}*/
 
 void removeNome(Hash* lista,char* nome){
 int chave = funcaoHash(nome);
