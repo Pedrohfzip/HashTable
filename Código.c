@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#define TAM 7
+#define TAM 2000
 
 //7 é bom
 typedef struct sElemento{
@@ -44,14 +44,14 @@ Hash* criaHash();
 void inicializarTabelaChaves(Hash*,int);
 void insereElementoChave(Hash*,ElementoChave*,int);
 ElementoChave* criaElementoChave(int);
-
 FILE* abreArquivo(char*,char*);
 void lerArquivo(Hash*);
 int funcaoHash(char*);
 void inserirNomeHash(Hash*,char*);
-void quicksort(Elemento*, Elemento*);
+void inserirUmNomeHash(Hash*,char*);
+Elemento* dividirLista(Elemento*, Elemento*);
 void trocarPosicao(Elemento*,Elemento*);
-Elemento* achaPivo(Elemento*,Elemento*);
+void quicksort(Elemento*,Elemento*);
 void mostrarListaChaves(Hash*);
 ElementoChave* encontrarChave(Hash*,int);
 void encontrarNome(Hash*,char*);
@@ -60,38 +60,29 @@ void escreveArquivo(Hash*);
 void mostrarListas(Hash*);
 void mostrarNomes(Hash*);
 void removeNome(Hash*,char*);
+void interface(Hash*);
+
 
 
 
 //
 
 int main(){
-
 Hash* listaHash = criaHash();
+
 inicializarTabelaChaves(listaHash,TAM);
-
-
-//char nome1[15] ="WESLA";
-//int i = funcaoHash(nome1);
-
-//printf("%i",i);
 
 lerArquivo(listaHash);
 
-mostrarNomes(listaHash);
+ElementoChave* aux = listaHash->head;
+    while(aux!=NULL){
+        quicksort(aux->head,aux->tail);
+         aux = aux->next;
+    }
 
-encontrarNome(listaHash,"VALERINO");
-printf("\n");
-encontrarNome(listaHash,"WESLA");
+interface(listaHash);
 
-removeNome(listaHash,"WESLA");
-
-printf("\n\n================================\n");
-
-
-mostrarNomes(listaHash);
-
-
+//mostrarListaChave(listaHash,3);
 
 
 }
@@ -221,9 +212,6 @@ ElementoChave* novo_elemento = criaElementoChave(chave);
     lista->size++;
 }
 
-
-
-
 //função hash que retorna a chave que o nome deve ser inserido
 int funcaoHash(char* nome){
 int soma = 0;
@@ -232,8 +220,6 @@ int soma = 0;
     }
     return soma;
 }
-
-
 
 //Abre o arquivo de texto
 FILE* abreArquivo(char* mode,char* nomeArquivo){
@@ -250,7 +236,7 @@ void lerArquivo(Hash* hash){
 FILE *arquivo;
 char* nome[15];
 char *result;
-arquivo = abreArquivo("rt", "nomesteste.txt");
+arquivo = abreArquivo("rt", "nomes.txt");
 int i = 0;
     while (!feof(arquivo)){
         result = fgets(nome, 99, arquivo);
@@ -267,13 +253,17 @@ int i = 0;
 //insere o na tabela hash
 void inserirNomeHash(Hash* hash,char* nome){
 int chave = funcaoHash(nome);
-ElementoChave* lista = encontrarChave(hash,chave);
-insereElemento(lista, lista->head, nome);
-quicksort(lista->head,lista->tail);
-
-    //printf("\n\nChave [%i] -> Adicionou o nome: %s\n",chave,nome);
-    return;
+    ElementoChave* lista = encontrarChave(hash,chave);
+    insereElemento(lista, lista->head, nome);
+return;
 }
+void inserirUmNomeHash(Hash* lista, char* nome){
+int chave = funcaoHash(nome);
+ElementoChave* listaNome = encontrarChave(lista,chave);
+insereElemento(lista,lista->head,nome);
+return;
+}
+
 
 //encontrarChave e retorna elemento chave
 ElementoChave* encontrarChave(Hash* lista,int chave){
@@ -288,63 +278,35 @@ ElementoChave* aux = lista->head;
 }
 
 // Orndenaçao Quicksort
-void quicksort(Elemento* comeco, Elemento* fim){
-  if (fim != NULL && comeco != fim && comeco != fim->next){
-    Elemento* i = comeco->previous;
-    Elemento* pivo = achaPivo(comeco,fim);
-    // Percorre a lista do início ao fim
-    for (Elemento* x = comeco; x != fim->next; x = x->next){
-      // Se o valor for menor que o pivô, trocar com o i
-        if (strcmp(x->nome, pivo->nome) < 0){
-            if(i == NULL){
-                i = comeco;
-            }else{
-                i = i->next;
-            }
-            trocarPosicao(i, x);
+Elemento* dividirLista(Elemento* comeco, Elemento* fim){
+Elemento* pivo = fim;
+Elemento* i = comeco->previous;
+    for (Elemento* x = comeco; x != fim; x = x->next){
+        if (strcmp(x->nome,pivo->nome) < 0){
+            i = (i == NULL ? comeco : i->next);
+            trocarPosicao(i,x);
         }
     }
-
-    // Coloca o pivô no lugar certo
-    if(i == NULL){
-        i = comeco;
-    }else{
-        i = i->next;
-    }
-    trocarPosicao(i, pivo);
-
-    // Ordena as duas partes da lista
-    quicksort(comeco, i->previous);
-    quicksort(i->next, fim);
-  }
+i = (i == NULL ? comeco : i->next);
+trocarPosicao(i,pivo);
+return i;
 }
 
 void trocarPosicao(Elemento* nome1, Elemento* nome2){
   char* nomeAux = (char*) malloc(sizeof(char) * 15);
-  strcpy(nomeAux, nome1->nome);
-  strcpy(nome1->nome, nome2->nome);
-  strcpy(nome2->nome, nomeAux);
-  free(nomeAux);
-}
-Elemento* achaPivo(Elemento* comeco, Elemento* fim){
-int size = 0;
-  for(Elemento *item = comeco; item != fim; item = item->next){
-    size++;
-  }
-  int pivo = size/2;
-  if(pivo >= 0 && pivo < size){
-    Elemento* aux = comeco;
-    int i;
-    for(i=0; i < pivo; i++){
-      aux = aux->next;
-    }
-    return aux;
-  }else if(pivo<0){
-    return NULL;
 
-  }else if(pivo >= size){
-    return NULL;
-  }
+strcpy(nomeAux, nome1->nome);
+strcpy(nome1->nome, nome2->nome);
+strcpy(nome2->nome, nomeAux);
+free(nomeAux);
+}
+
+void quicksort(Elemento* comeco, Elemento* fim){
+ if(fim != NULL && comeco != fim && comeco != fim->next){
+        Elemento* p = dividirLista(comeco, fim);
+        quicksort(comeco, p->previous);
+        quicksort(p->next, fim);
+    }
 }
 
 //Monstra a todos os nomes
@@ -367,13 +329,10 @@ int i = 0;
 }
 
 //mostra a lista com todas as chaves
-void mostrarListaChaves(Hash* lista){
+void mostrarListaChave(Hash* lista,int chave){
 ElementoChave* aux = lista->head;
-    printf("Listas Chaves\n");
-        while(aux != NULL){
-            //printf("Chave[%i]\n", aux->chave);
-            aux = aux->next;
-        }
+Elemento* listaChave = encontrarChave(lista,chave);
+        mostrarLista(listaChave);
 }
 
 
@@ -387,7 +346,7 @@ int posicao = 0;
 
             for(Elemento* nomeLista = chaveEscolhida->head; nomeLista != NULL; nomeLista = nomeLista->next){
                 if(strcmp(nomeLista->nome,nome)==0){
-                    printf("Nome encontrado Chave[%i] Posicao[%i]->%s\t ",chave,posicao,nome);
+                    printf("\n\tNome encontrado Chave[%i] Posicao[%i]->%s\t\n\n",chave,posicao,nome);
                     return;
                 }
                 posicao++;
@@ -398,28 +357,60 @@ int posicao = 0;
 
 }
 
-/*int buscarNome(ElementoChave* lista, char* nome){
-    int posicao = 0;
-    for(Elemento* nomeLista = lista->head; nomeLista != NULL; nomeLista = nomeLista->next){
-        if(strcmp(nomeLista->nome,nome)){
-            printf(": Posicao[%i]->%s",posicao,nomeLista->nome);
-            return;
-        }
-        posicao++;
-    }
-    return posicao;
-}*/
+
 
 void removeNome(Hash* lista,char* nome){
 int chave = funcaoHash(nome);
+int posicao = 0;
     for(ElementoChave* chaveEscolhida = lista->head; chaveEscolhida != NULL; chaveEscolhida = chaveEscolhida->next){
         if(chaveEscolhida->chave == chave){
             for(Elemento* nomeLista = chaveEscolhida->head; nomeLista != NULL; nomeLista = nomeLista->next){
                 if(strcmp(nomeLista->nome,nome)== 0){
                     removeElemento(chaveEscolhida,nomeLista);
                     return;
+                }else{
+                    return NULL;
                 }
             }
         }
     }
+}
+
+void interface(Hash* lista){
+char* nome = (char*) malloc(sizeof(char) * TAM);
+int opcao;
+int chave = 0;
+
+
+    do{
+        printf("\t\t\t=========== Tabela Hash ===========\n\n");
+        printf("Menu\t[1]Adicionar Nome\n\n\t[2]Excluir Nome\n\n\t[3]Procurar Nome\n\n\t[4]Mostrar Tabela\n\n\t[5]Mostrar uma Chave\n\n\t[0]Sair\n");
+        scanf("%i",&opcao);
+
+        if(opcao == 1){
+            printf("\tEscreva o nome que deseja adicionar:");
+            scanf("%s",nome);
+            inserirNomeHash(lista,nome);
+        }else if(opcao == 2){
+            printf("Digite o nome que deseja deletar:");
+            scanf("%s",nome);
+            removeNome(lista,nome);
+        }else if(opcao == 3){
+            printf("Digite o nome que deseja buscar:");
+            scanf("%s",nome);
+            encontrarNome(lista,nome);
+        }else if(opcao == 4){
+            mostrarNomes(lista);
+        }else if(opcao == 5){
+            printf("Digite a chave que deseja mostrar:");
+            scanf("%i", &chave);
+            printf("\nChave[%i]\n",chave);
+            mostrarListaChave(lista,chave);
+        }
+
+
+
+    }while(opcao != 0);
+
+
 }
