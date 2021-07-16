@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#define TAM 2000
+#define TAM 23
 
 //7 é bom
 typedef struct sElemento{
@@ -48,17 +48,17 @@ FILE* abreArquivo(char*,char*);
 void lerArquivo(Hash*);
 int funcaoHash(char*);
 void inserirNomeHash(Hash*,char*);
-void inserirUmNomeHash(Hash*,char*);
 Elemento* dividirLista(Elemento*, Elemento*);
 void trocarPosicao(Elemento*,Elemento*);
 void quicksort(Elemento*,Elemento*);
-void mostrarListaChaves(Hash*);
 ElementoChave* encontrarChave(Hash*,int);
 void encontrarNome(Hash*,char*);
 //int buscarNome(ElementoChave*, char*);
 void escreveArquivo(Hash*);
 void mostrarListas(Hash*);
 void mostrarNomes(Hash*);
+void mostrarListaChave(Hash*,int);
+void mostrarTamChaves(Hash*);
 void removeNome(Hash*,char*);
 void interface(Hash*);
 
@@ -82,7 +82,13 @@ ElementoChave* aux = listaHash->head;
 
 interface(listaHash);
 
-//mostrarListaChave(listaHash,3);
+//Mostra quantas chaves tem em cada chave, para analise de nivelamento;
+//Para executar tira as duas barras do inicio da função;
+//recomendo que coloque duas barras na função interface a cima;
+//mostrarTamChaves(listaHash);
+
+
+
 
 
 }
@@ -257,12 +263,7 @@ int chave = funcaoHash(nome);
     insereElemento(lista, lista->head, nome);
 return;
 }
-void inserirUmNomeHash(Hash* lista, char* nome){
-int chave = funcaoHash(nome);
-ElementoChave* listaNome = encontrarChave(lista,chave);
-insereElemento(lista,lista->head,nome);
-return;
-}
+
 
 
 //encontrarChave e retorna elemento chave
@@ -330,9 +331,17 @@ int i = 0;
 
 //mostra a lista com todas as chaves
 void mostrarListaChave(Hash* lista,int chave){
-ElementoChave* aux = lista->head;
 Elemento* listaChave = encontrarChave(lista,chave);
-        mostrarLista(listaChave);
+mostrarLista(listaChave);
+}
+
+void mostrarTamChaves(Hash* lista){
+int i = 0;
+    for(ElementoChave* chave = lista->head; chave != NULL; chave = chave->next){
+      printf("Chave [%d] (Tamanho: %i)\n",i,chave->size);
+      printf("\n");
+      i++;
+    }
 }
 
 
