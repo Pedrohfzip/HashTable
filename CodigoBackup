@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#define TAM 23
+#define TAM 7
 
 //7 é bom
 typedef struct sElemento{
@@ -48,9 +48,10 @@ FILE* abreArquivo(char*,char*);
 void lerArquivo(Hash*);
 int funcaoHash(char*);
 void inserirNomeHash(Hash*,char*);
-void quicksort(Elemento*, Elemento*);
+void inserirUmNomeHash(Hash*,char*);
+Elemento* dividirLista(Elemento*, Elemento*);
 void trocarPosicao(Elemento*,Elemento*);
-Elemento* achaPivo(Elemento*,Elemento*);
+void quicksort(Elemento*,Elemento*);
 void mostrarListaChaves(Hash*);
 ElementoChave* encontrarChave(Hash*,int);
 void encontrarNome(Hash*,char*);
@@ -59,24 +60,19 @@ void escreveArquivo(Hash*);
 void mostrarListas(Hash*);
 void mostrarNomes(Hash*);
 void removeNome(Hash*,char*);
+void interface(Hash*);
+
 
 
 
 //
 
 int main(){
-
 Hash* listaHash = criaHash();
+
 inicializarTabelaChaves(listaHash,TAM);
 
-
-//char nome1[15] ="WESLA";
-//int i = funcaoHash(nome1);
-
-//printf("%i",i);
-
 lerArquivo(listaHash);
-
 
 ElementoChave* aux = listaHash->head;
     while(aux!=NULL){
@@ -84,21 +80,7 @@ ElementoChave* aux = listaHash->head;
          aux = aux->next;
     }
 
-
-mostrarNomes(listaHash);
-
-
-//printf("\n");
-encontrarNome(listaHash,"WESLA");
-
-removeNome(listaHash,"WESLA");
-
-//printf("\n\n================================\n");
-
-
-mostrarNomes(listaHash);
-
-
+interface(listaHash);
 
 
 }
@@ -228,9 +210,6 @@ ElementoChave* novo_elemento = criaElementoChave(chave);
     lista->size++;
 }
 
-
-
-
 //função hash que retorna a chave que o nome deve ser inserido
 int funcaoHash(char* nome){
 int soma = 0;
@@ -239,8 +218,6 @@ int soma = 0;
     }
     return soma;
 }
-
-
 
 //Abre o arquivo de texto
 FILE* abreArquivo(char* mode,char* nomeArquivo){
@@ -257,7 +234,7 @@ void lerArquivo(Hash* hash){
 FILE *arquivo;
 char* nome[15];
 char *result;
-arquivo = abreArquivo("rt", "nomes.txt");
+arquivo = abreArquivo("rt", "nomesteste.txt");
 int i = 0;
     while (!feof(arquivo)){
         result = fgets(nome, 99, arquivo);
@@ -274,13 +251,17 @@ int i = 0;
 //insere o na tabela hash
 void inserirNomeHash(Hash* hash,char* nome){
 int chave = funcaoHash(nome);
-ElementoChave* lista = encontrarChave(hash,chave);
-insereElemento(lista, lista->head, nome);
-//quicksort(lista->head,lista->tail);
-
-    //printf("\n\nChave [%i] -> Adicionou o nome: %s\n",chave,nome);
-    return;
+    ElementoChave* lista = encontrarChave(hash,chave);
+    insereElemento(lista, lista->head, nome);
+return;
 }
+void inserirUmNomeHash(Hash* lista, char* nome){
+int chave = funcaoHash(nome);
+ElementoChave* listaNome = encontrarChave(lista,chave);
+insereElemento(lista,lista->head,nome);
+return;
+}
+
 
 //encontrarChave e retorna elemento chave
 ElementoChave* encontrarChave(Hash* lista,int chave){
@@ -295,61 +276,35 @@ ElementoChave* aux = lista->head;
 }
 
 // Orndenaçao Quicksort
-void quicksort(Elemento* comeco, Elemento* fim){
-  if (fim != NULL && comeco != fim && comeco != fim->next){
-    Elemento* i = comeco->previous;
-    Elemento* pivo = achaPivo(comeco,fim);
-        if(pivo == NULL){
-            return;
-        }
-    // Percorre a lista do início ao fim
-    for (Elemento* x = comeco; x != fim->next; x = x->next){
-      // Se o valor for menor que o pivô, trocar com o i
-        if (strcmp(x->nome, pivo->nome) < 0){
+Elemento* dividirLista(Elemento* comeco, Elemento* fim){
+Elemento* pivo = fim;
+Elemento* i = comeco->previous;
+    for (Elemento* x = comeco; x != fim; x = x->next){
+        if (strcmp(x->nome,pivo->nome) < 0){
             i = (i == NULL ? comeco : i->next);
             trocarPosicao(i,x);
         }
-
     }
-    // Coloca o pivô no lugar certo
-    i = (i == NULL ? comeco : i->next);
-    trocarPosicao(i, pivo);
-
-    // Ordena as duas partes da lista
-    quicksort(comeco, i->previous);
-    quicksort(i->next, fim);
-  }
+i = (i == NULL ? comeco : i->next);
+trocarPosicao(i,pivo);
+return i;
 }
 
 void trocarPosicao(Elemento* nome1, Elemento* nome2){
   char* nomeAux = (char*) malloc(sizeof(char) * 15);
 
-  strcpy(nomeAux, nome1->nome);
-  strcpy(nome1->nome, nome2->nome);
-  strcpy(nome2->nome, nomeAux);
-  free(nomeAux);
+strcpy(nomeAux, nome1->nome);
+strcpy(nome1->nome, nome2->nome);
+strcpy(nome2->nome, nomeAux);
+free(nomeAux);
 }
 
-Elemento* achaPivo(Elemento* comeco, Elemento* fim){
-int size = 0;
-  for(Elemento* item = comeco; item != fim; item = item->next){
-    size++;
-  }
-  int pivo = size/2;
-  if(pivo >= 0 && pivo < size){
-    Elemento* aux = comeco;
-    int i;
-    for(i=0; i < pivo; i++){
-      aux = aux->next;
+void quicksort(Elemento* comeco, Elemento* fim){
+ if(fim != NULL && comeco != fim && comeco != fim->next){
+        Elemento* p = dividirLista(comeco, fim);
+        quicksort(comeco, p->previous);
+        quicksort(p->next, fim);
     }
-    return aux;
-  }else if(pivo<0){
-    return NULL;
-
-  }else if(pivo >= size){
-    return NULL;
-
-  }
 }
 
 //Monstra a todos os nomes
@@ -392,7 +347,7 @@ int posicao = 0;
 
             for(Elemento* nomeLista = chaveEscolhida->head; nomeLista != NULL; nomeLista = nomeLista->next){
                 if(strcmp(nomeLista->nome,nome)==0){
-                    printf("Nome encontrado Chave[%i] Posicao[%i]->%s\t ",chave,posicao,nome);
+                    printf("\n\tNome encontrado Chave[%i] Posicao[%i]->%s\t\n\n",chave,posicao,nome);
                     return;
                 }
                 posicao++;
@@ -403,17 +358,7 @@ int posicao = 0;
 
 }
 
-/*int buscarNome(ElementoChave* lista, char* nome){
-    int posicao = 0;
-    for(Elemento* nomeLista = lista->head; nomeLista != NULL; nomeLista = nomeLista->next){
-        if(strcmp(nomeLista->nome,nome)){
-            printf(": Posicao[%i]->%s",posicao,nomeLista->nome);
-            return;
-        }
-        posicao++;
-    }
-    return posicao;
-}*/
+
 
 void removeNome(Hash* lista,char* nome){
 int chave = funcaoHash(nome);
@@ -424,9 +369,44 @@ int posicao = 0;
                 if(strcmp(nomeLista->nome,nome)== 0){
                     removeElemento(chaveEscolhida,nomeLista);
                     return;
+                }else{
+                    return NULL;
                 }
             }
         }
     }
 }
 
+void interface(Hash* lista){
+char* nome = (char*) malloc(sizeof(char) * TAM);
+int i;
+int opcao;
+
+
+    do{
+        printf("\t\t\t=========== Tabela Hash ===========\n\n");
+        printf("Menu\t[1]Adicionar Nome\n\n\t[2]Excluir Nome\n\n\t[3]Procurar Nome\n\n\t[4]Mostrar Tabela\n\n\t[0]Sair\n");
+        scanf("%i",&opcao);
+
+        if(opcao == 1){
+            printf("\tEscreva o nome que deseja adicionar:");
+            scanf("%s",nome);
+            inserirNomeHash(lista,nome);
+        }else if(opcao == 2){
+            printf("Digite o nome que deseja deletar:");
+            scanf("%s",nome);
+            removeNome(lista,nome);
+        }else if(opcao == 3){
+            printf("Digite o nome que deseja buscar:");
+            scanf("%s",nome);
+            encontrarNome(lista,nome);
+        }else if(opcao == 4){
+            mostrarNomes(lista);
+        }
+
+
+
+    }while(opcao != 0);
+
+
+}
