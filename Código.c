@@ -386,6 +386,7 @@ int posicao = 0;
             for(Elemento* nomeLista = chaveEscolhida->head; nomeLista != NULL; nomeLista = nomeLista->next){
                 if(strcmp(nomeLista->nome,nome)== 0){
                     removeElemento(chaveEscolhida,nomeLista);
+                    printf("[%s]->DELETADO",nome);
                     return;
             }
         }
