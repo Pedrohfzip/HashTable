@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#define TAM 23
+#define TAM 100
 
 //7 é bom
 typedef struct sElemento{
@@ -48,6 +48,7 @@ FILE* abreArquivo(char*,char*);
 void lerArquivo(Hash*);
 int funcaoHash(char*);
 void inserirNomeHash(Hash*,char*);
+void inserirUmNomeHash(Hash*,char*);
 Elemento* dividirLista(Elemento*, Elemento*);
 void trocarPosicao(Elemento*,Elemento*);
 void quicksort(Elemento*,Elemento*);
@@ -61,6 +62,7 @@ void mostrarListaChave(Hash*,int);
 void mostrarTamChaves(Hash*);
 void removeNome(Hash*,char*);
 void interface(Hash*);
+void escrveHashNoOutput(Hash*);
 
 
 
@@ -78,16 +80,17 @@ ElementoChave* aux = listaHash->head;
     while(aux!=NULL){
         quicksort(aux->head,aux->tail);
          aux = aux->next;
-    }
+}
+
 
 interface(listaHash);
-
 //Mostra quantas chaves tem em cada chave, para analise de nivelamento;
 //Para executar tira as duas barras do inicio da função;
 //recomendo que coloque duas barras na função interface a cima;
 //mostrarTamChaves(listaHash);
 
 
+//escrveHashNoOutput(listaHash);
 
 
 
@@ -263,6 +266,13 @@ int chave = funcaoHash(nome);
     insereElemento(lista, lista->head, nome);
 return;
 }
+void inserirUmNomeHash(Hash* hash,char* nome){
+int chave = funcaoHash(nome);
+    ElementoChave* lista = encontrarChave(hash,chave);
+    insereElemento(lista, lista->head, nome);
+    quicksort(lista->head,lista->tail);
+return;
+}
 
 
 
@@ -377,12 +387,10 @@ int posicao = 0;
                 if(strcmp(nomeLista->nome,nome)== 0){
                     removeElemento(chaveEscolhida,nomeLista);
                     return;
-                }else{
-                    return NULL;
-                }
             }
         }
     }
+}
 }
 
 void interface(Hash* lista){
@@ -399,7 +407,7 @@ int chave = 0;
         if(opcao == 1){
             printf("\tEscreva o nome que deseja adicionar:");
             scanf("%s",nome);
-            inserirNomeHash(lista,nome);
+            inserirUmNomeHash(lista,nome);
         }else if(opcao == 2){
             printf("Digite o nome que deseja deletar:");
             scanf("%s",nome);
@@ -421,5 +429,19 @@ int chave = 0;
 
     }while(opcao != 0);
 
+
+}
+void escrveHashNoOutput(Hash* lista){
+  int chave = 1;
+	char output_file[] = "output.txt";
+	FILE* out = fopen("output.txt", "w");
+    for(ElementoChave* item = lista->head; item != NULL; item = item->next){
+		  fprintf(out, "Chave%d\n",chave);
+		  printf("\n\n\n");
+    chave++;
+    }
+    for(ElementoChave* item = lista->head; item != NULL; item = item->next){
+		  fprintf(out, "%d\n",item->size);
+    }
 
 }
